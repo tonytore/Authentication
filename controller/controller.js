@@ -1,4 +1,5 @@
 const userModel = require('../model/model')
+const md5 = require('md5')
 
 
 exports.home = function(req,res){
@@ -16,7 +17,7 @@ exports.register = function(req,res){
 exports.postRegister = function(req,res){
     const newUser = new userModel({
         email:req.body.username,
-        password:req.body.password
+        password:md5(req.body.password)
     })
 
  newUser.save(function(err){
@@ -31,7 +32,7 @@ exports.postRegister = function(req,res){
 
 exports.postLogin = function(req,res){
   const email = req.body.username;
-  const password = req.body.password
+  const password = md5(req.body.password)
 
   userModel.findOne({email:email}, function(err, foundUser){
       if (err) {
