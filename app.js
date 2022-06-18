@@ -3,6 +3,9 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const ejs = require('ejs')
 const mongoose = require('mongoose')
+const session = require('express-session');
+const passport = require("passport");
+const passportLocalMongoose = require("passport-local-mongoose");
 const authRoute = require('./router/route')
 //const md5 = require('md5')
 
@@ -13,7 +16,15 @@ app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static("public"))
 app.set('view engine' , 'ejs')
 
-
+app.use(session({
+    secret: "Our little secret.",
+    resave: false,
+    saveUninitialized: false
+  }));
+  
+  app.use(passport.initialize());
+  app.use(passport.session());
+  
 
 
 
@@ -22,6 +33,10 @@ mongoose.connect(process.env.mongo_uri).then(()=>{
 }).catch((err)=>{
     console.log(err);
 })
+//mongoose.set("useCreateIndex", true);
+
+
+
 
 
 app.use('/', authRoute)

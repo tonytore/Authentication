@@ -9,6 +9,8 @@ route.get('/login',  controller.login)
 
 route.get('/register',  controller.register)
 
+route.get('/secrets', controller.secret)
+
 route.post('/register',  controller.postRegister)
 
 route.post('/login',  controller.postLogin)

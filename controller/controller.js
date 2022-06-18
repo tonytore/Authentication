@@ -1,5 +1,14 @@
 const userModel = require('../model/model')
-const md5 = require('md5')
+//const md5 = require('md5')
+const passport = require("passport");
+
+
+passport.use(userModel.createStrategy());
+
+passport.serializeUser(userModel.serializeUser());
+
+
+passport.deserializeUser(userModel.deserializeUser());
 
 
 exports.home = function(req,res){
@@ -14,38 +23,44 @@ exports.register = function(req,res){
     res.render('register')
 }  
 
-exports.postRegister = function(req,res){
-    const newUser = new userModel({
-        email:req.body.username,
-        password:md5(req.body.password)
-    })
+exports.secret = function(req, res){
+    if (req.isAuthenticated()){
+      res.render("secrets");
+    } else {
+      res.redirect("/login");
+    }
+  }
 
- newUser.save(function(err){
-     if (err) {
-         console.log(err);
-     } else {
-         res.render("secrets")
-     }
- })
+exports.postRegister =  function(req, res){
 
-}
+    userModel.register({username: req.body.username}, req.body.password, function(err, user){
+      if (err) {
+        console.log(err);
+        res.redirect("/register");
+      } else {
+        passport.authenticate("local")(req, res, function(){
+          res.redirect("/secrets");
+        });
+      }
+    });
+  
+  };
 
-exports.postLogin = function(req,res){
-  const email = req.body.username;
-  const password = md5(req.body.password)
+exports.postLogin = function(req, res){
 
-  userModel.findOne({email:email}, function(err, foundUser){
+    const user = new userModel({
+      username: req.body.username,
+      password: req.body.password
+    });
+  
+    req.login(user, function(err){
       if (err) {
         console.log(err);
       } else {
-          if (foundUser) {
-              if (foundUser.password === password) {
-                  res.render("secrets")
-              }
-              
-          }
-          
+        passport.authenticate("local")(req, res, function(){
+          res.redirect("/secrets");
+        });
       }
-  })
-
-}
+    });
+  
+  }
