@@ -5,13 +5,15 @@ const ejs = require('ejs')
 const mongoose = require('mongoose')
 const session = require('express-session');
 const passport = require("passport");
-const passportLocalMongoose = require("passport-local-mongoose");
+//const passportLocalMongoose = require("passport-local-mongoose");
+//const GoogleStrategy = require('passport-google-oauth20').Strategy;
+//const findOrCreate = require('mongoose-findorcreate');
+
 const authRoute = require('./router/route')
 //const md5 = require('md5')
 
 
 const app = express()
-
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static("public"))
 app.set('view engine' , 'ejs')

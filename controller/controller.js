@@ -1,15 +1,37 @@
 const userModel = require('../model/model')
 //const md5 = require('md5')
 const passport = require("passport");
+const passportLocalMongoose = require("passport-local-mongoose");
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const findOrCreate = require('mongoose-findorcreate');
 
 
 passport.use(userModel.createStrategy());
 
-passport.serializeUser(userModel.serializeUser());
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user) {
+      done(err, user);
+    });
+  });
 
+  passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:4000/auth/google/secrets",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    console.log(profile);
 
-passport.deserializeUser(userModel.deserializeUser());
-
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
 
 exports.home = function(req,res){
     res.render('home')
@@ -24,11 +46,62 @@ exports.register = function(req,res){
 }  
 
 exports.secret = function(req, res){
-    if (req.isAuthenticated()){
-      res.render("secrets");
+  userModel.find({"secret": {$ne: null}}, function(err, foundUsers){
+    if (err){
+      console.log(err);
     } else {
-      res.redirect("/login");
+      if (foundUsers) {
+        res.render("secrets", {usersWithSecrets: foundUsers});
+      }
     }
+  });
+  }
+
+ exports.submit =  function(req, res){
+  if (req.isAuthenticated()){
+    res.render("submit");
+  } else {
+    res.redirect("/login");
+  }
+}
+
+exports.postSubmit = function(req, res){
+  const submittedSecret = req.body.secret;
+
+//Once the user is authenticated and their session gets saved, their user details are saved to req.user.
+  // console.log(req.user.id);
+
+  userModel.findById(req.user.id, function(err, foundUser){
+    if (err) {
+      console.log(err);
+    } else {
+      if (foundUser) {
+        foundUser.secret = submittedSecret;
+        foundUser.save(function(){
+          res.redirect("/secrets");
+        });
+      }
+    }
+  });
+}
+
+ exports.Logout = function(req, res){
+    req.logout(function(err) {
+        if (err) { 
+            return next(err);
+         }
+        res.redirect("/");
+      });
+    
+   
+  }
+
+  exports.googleAuth =  passport.authenticate('google', { scope: ["profile"] })
+
+  exports.googleAuthSecret = passport.authenticate('google', { failureRedirect: "/login" }),
+  function(req, res) {
+    // Successful authentication, redirect to secrets.
+    res.redirect("/secrets");
   }
 
 exports.postRegister =  function(req, res){

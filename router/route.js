@@ -11,6 +11,16 @@ route.get('/register',  controller.register)
 
 route.get('/secrets', controller.secret)
 
+route.get("/submit", controller.submit);
+  
+route.post("/submit", controller.postSubmit);
+
+route.get('/logout', controller.Logout)
+
+route.get("/auth/google",controller.googleAuth);
+
+route.get("/auth/google/secrets",controller.googleAuthSecret);
+
 route.post('/register',  controller.postRegister)
 
 route.post('/login',  controller.postLogin)
