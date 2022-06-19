@@ -13,7 +13,7 @@ passport.serializeUser(function(user, done) {
   });
   
   passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
+    userModel.findById(id, function(err, user) {
       done(err, user);
     });
   });
@@ -27,7 +27,7 @@ passport.serializeUser(function(user, done) {
   function(accessToken, refreshToken, profile, cb) {
     console.log(profile);
 
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    userModel.findOrCreate({ googleId: profile.id }, function (err, user) {
       return cb(err, user);
     });
   }
